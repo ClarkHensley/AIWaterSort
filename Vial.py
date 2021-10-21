@@ -88,9 +88,10 @@ class Vial:
         for i in range(curr_top, -1, -1):
             if self.color_list[i - 1].id != goal_id:
                 return i
+        return 0
 
     def getHeightOfTop(self):
-        return self.getTop - self.getBottomOfTop + 1
+        return self.getTop() - self.getBottomOfTop() + 1
 
     def checkEmpty(self):
         flag = True

@@ -38,16 +38,16 @@ def optimizeMoves(main_display, possible_moves):
 def testMoves(possible_moves, main_display):
     for move in possible_moves:
         # Test for One-Color vials
-        if main_display.vials[moves.f].oneColor:
+        if main_display.vials[move.f].oneColor:
             move.score += 100000
         # Move appropriate tops into One-Color Vials
-        elif main_display.vials[moves.t].oneColor:
+        elif main_display.vials[move.t].oneColor:
             move.score -= 1000
-            move.score -= 100 * main_display.vials[moves.f].getHeightOfTop()
-            move.score += 50 * main_display.vials[moves.f].numberOfChunks
+            move.score -= 100 * main_display.vials[move.f].getHeightOfTop()
+            move.score += 50 * main_display.vials[move.f].numberOfChunks
         # Move the tallest tops to the lowest lows, with a slightly worse value for chunkiness
         else:
-            move.score -= 20 * main_display.vials[moves.f].top
-            move.score += 4 * main_display.vials[moves.t].top
-            move.score += 1 * (main_display.vials[moves.f].numberOfChunks + main_display.vials[moves.t].numberOfChunks)  
+            move.score -= 20 * main_display.vials[move.f].top
+            move.score += 4 * main_display.vials[move.t].top
+            move.score += 1 * (main_display.vials[move.f].numberOfChunks + main_display.vials[move.t].numberOfChunks)  
 

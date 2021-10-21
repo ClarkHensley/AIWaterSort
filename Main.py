@@ -6,9 +6,11 @@ from colorama import Fore, Back
 from os import name
 import subprocess
 import time
+import heapq
 
 # Testing
 import random
+import sys
 
 # Class Imports
 from Water import Water
@@ -16,6 +18,8 @@ from Display import Display
 from Checker import canMove, optimizeMoves
 
 def main():
+
+    sys.setrecursionlimit(2000)
 
     # Constants
     # No MAGIC NUMBERS
@@ -54,15 +58,23 @@ def main():
         for _ in range(VIAL_DEPTH):
             color_list.append(temp) 
 
-    main_display = Display(color_list, VIAL_DEPTH, VIAL_NUMBER, EXTRA_VIALS)
+    main_display = Display(color_list[:], VIAL_DEPTH, VIAL_NUMBER, EXTRA_VIALS)
 
     while not(solved):
 
         main_display.show()
-        possible_moves = []
-        recursiveSolve(main_display, possible_moves, [None], [], [], 1)
+        best_solution = []
+        first_solution = []
+        steps = -1
+        best_solution, first_solution = recursiveSolve(main_display, color_list, [], [], best_solution, first_solution, 1)
         #time.sleep(1)
         
+        print(len(first_solution))
+        print(first_solution)
+        print(len(best_solution))
+        print(best_solution)
+        input()
+
         subprocess.run(clear_string)
 
     subprocess.run(clear_string)
@@ -70,28 +82,44 @@ def main():
 
     print("\nCompleted! Good Job!")
 
-def recursiveSolve(main_display, possible_moves, old_list, solution, first_solution, steps):
+def recursiveSolve(curr_display, color_list, possible_moves, current_path, best_solution, first_solution, steps):
 
-    temp_display = Display(color_list, VIAL_DEPTH, VIAL_NUMBER, EXTRA_VIALS)
-    temp_display.vials = main_display.vials[:]
-    for move in old_list:
-        temp_display.transfer(move.f, move.t)
+    #DEBUG
+    print(steps)
 
-    if temp_display.checkSolved():
+    if curr_display.checkSolved():
         if len(first_solution) == 0:
-            first_solution = old_list[:]
-            solution = old_list[:]
-        elif len(old_list) < len(solution):
-            solution = old_list[:]
+            first_solution = current_path[:]
+            best_solution = current_path[:]
+        elif len(current_path) < len(best_solution):
+            best_solution = current_path[:]
 
-    if len(old_list) == 0:
+    #if len(old_list) == 0:
         # End the loop, return here
-        return
+        #return
 
-    else:
-        optimize_moves(main_display, possible_moves)
-        # copy the display to have a main one and a test one.
-        # Save a state of possible_moves every time before the recursion, return to that after
+    optimizeMoves(curr_display, possible_moves)
+
+    # heapify possible_moves
+    heapq.heapify(possible_moves)
+
+    while len(possible_moves) > 0:
+        next_move = heapq.heappop(possible_moves)
+
+        current_path.append(next_move) 
+
+        new_display = Display(color_list[:], curr_display.depth, curr_display.vial_number, curr_display.extra_vials)
+        new_display.vials = curr_display.vials[:]
+        new_display.transfer(next_move.f, next_move.t)
+
+        # ???
+        lower_finished = recursiveSolve(new_display, color_list, [], current_path, best_solution, first_solution, steps + 1)
+        heapq.heapify(possible_moves)
+        del current_path
+
+    if steps == 1:
+        return best_solution, first_solution
+    return True
 
 
 if __name__ == "__main__":
