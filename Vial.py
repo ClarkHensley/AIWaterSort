@@ -16,6 +16,7 @@ class Vial:
         self.won = False
         self.oneColor = False
         self.top = 0
+        self.numberOfChunks = -1
 
         self.color_list = []
 
@@ -24,6 +25,7 @@ class Vial:
                 self.color_list.append(Water(None, None, True)) 
             self.won = True
             self.top = -1
+            self.numberOfChunks = 1
 
         else:
             for _ in range(depth):
@@ -33,6 +35,7 @@ class Vial:
                 self.color_list.append(chosen_color)
 
             self.top = self.depth - 1
+            self.countChunks()
 
         self.display = []
 
@@ -57,14 +60,7 @@ class Vial:
         self.display.append(Fore.BLACK + Back.WHITE + "\u2514" + "\u2500" + "\u2518")
 
     def checkWon(self):
-        self.won = False
-        goal_id = self.color_list[0].id
-
-        for color in self.color_list:
-            if color.id != goal_id:
-                return
-
-        self.won = True
+        self.won = self.getHeightOfTop() == self.depth
 
     def checkOneColor(self):
         if self.empty:
@@ -105,4 +101,12 @@ class Vial:
         self.empty = flag
         if flag:
             self.top = -1
+
+    def countChunks(self):
+        tempList = []
+        for water in self.color_list:
+            tempList.append(water.id)
+
+        self.numberOfChunks = len(set(tempList))
+
 

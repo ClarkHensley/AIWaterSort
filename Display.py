@@ -45,7 +45,7 @@ class Display:
                     self.vials[to_ind].update()
                     self.vials[from_ind].update()
     
-        return self.checkSolved()
+        #return self.checkSolved()
 
     def checkSolved(self):
         for vial in self.vials:
@@ -62,5 +62,5 @@ class Display:
             print()
         print()
         for i in range(len(self.vials)):
-            print(str(i + 1), end = "\t")
+            print(" " + str(i + 1), end = "\t")
 

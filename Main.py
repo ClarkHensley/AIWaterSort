@@ -13,7 +13,7 @@ import random
 # Class Imports
 from Water import Water
 from Display import Display
-from Checker import canMove
+from Checker import canMove, optimizeMoves
 
 def main():
 
@@ -59,171 +59,40 @@ def main():
     while not(solved):
 
         main_display.show()
-        #throwaway = input()
+        possible_moves = []
+        recursiveSolve(main_display, possible_moves, [None], [], [], 1)
         #time.sleep(1)
         
-        From = int(input("\nMove From Vial: ")) - 1
-        To = int(input("\nMove To Vial: ")) - 1
-        #options = [i for i in range(VIAL_NUMBER)]
-        #From = options.pop(random.randint(0, len(options) - 1))
-        #To = options.pop(random.randint(0, len(options) - 1))
-        
-        if From != To:
-            solved = main_display.transfer(From, To)
-        #temp = select(main_display.vials)
-        #solved = main_display.transfer(temp[0], temp[1])
-
-        #subprocess.run(clear_string)
+        subprocess.run(clear_string)
 
     subprocess.run(clear_string)
     main_display.show()
 
     print("\nCompleted! Good Job!")
 
+def recursiveSolve(main_display, possible_moves, old_list, solution, first_solution, steps):
 
+    temp_display = Display(color_list, VIAL_DEPTH, VIAL_NUMBER, EXTRA_VIALS)
+    temp_display.vials = main_display.vials[:]
+    for move in old_list:
+        temp_display.transfer(move.f, move.t)
 
-def select(vials):
+    if temp_display.checkSolved():
+        if len(first_solution) == 0:
+            first_solution = old_list[:]
+            solution = old_list[:]
+        elif len(old_list) < len(solution):
+            solution = old_list[:]
 
-    from_ind = 0
-    to_ind = 0
-    while not(canMove(vials[from_ind], vials[to_ind])):
-        from_ind = random.randint(0, len(vials) - 1)
-        to_ind = random.randint(0, len(vials) - 1)
-    return (from_ind, to_ind)
-
-
-    """scores = []
-    for i in range(len(vials)):
-        for j in range(len(vials)):
-            if not i == j:
-                scores.append([(i, j), 0])
-    
-    scores = list(enumerate(scores))
-
-    # If there are empty vials:
-    hasEmpty = False
-    empties = []
-    for v in range(len(vials)):
-        if vials[v].empty:
-            hasEmpty = True
-            empties.append(v)
-
-    if hasEmpty:
-        longest = []
-        # Case 1, a vial has the longest continuous section.
-        print("case1")
-        for v in range(len(vials)):
-            if not(vials[v].empty or vials[v].won):
-                top = len(vials[v].color_list) - 1
-                while vials[v].color_list[top].id == -1:
-                    top -= 1
-
-                bottom = top
-                while vials[v].color_list[top].id == vials[v].color_list[bottom - 1].id:
-                    bottom -= 1
-
-                if bottom != 0:
-                    longest.append((v, top - bottom + 1))
-
-        max = (0, 0)
-        single_longest = True
-        for l in longest:
-            if l[1] > max[1]:
-                max = (l[0], l[1])
-                single_longest = True
-            if l[1] == max[1]:
-                single_longest = False
-
-        if single_longest:
-            return (max[0], empties[0])
-
-        # Case 2, a vial has only n Groups, groups, 2 and up:
-        print("case2")
-        for n in range(2, len(vials[v].color_list)):
-            for v in range(len(vials)):
-                if not(vials[v].empty or vials[v].won):
-                    temp_list = vials[v].color_list[:]
-                    i = 0
-                    while len(temp_list) > 0:
-                        temp_val = temp_list[0]
-                        while temp_val in temp_list:
-                            c = 0
-                            while c < len(temp_list):
-                                if temp_list[c] == temp_val:
-                                    temp_list.pop(c)
-                                else:
-                                    c += 1
-                        i += 1
-                    if i == n:
-                        return((v, empties[0]))
+    if len(old_list) == 0:
+        # End the loop, return here
+        return
 
     else:
-        # If there are no empties:
-        
-        # Case 3, a vial has a base of only one color:
-        print("case3")
-        for v in range(len(vials)):
-            print(v)
-            approved = True
-            check = vials[v].color_list[0].id
-            for i in range(len(vials[v].color_list)):
-                if vials[v].color_list[i].id == check or vials[v].color_list[i].id == -1:
-                    check = vials[v].color_list[i].id
-                    if vials[v].color_list[i].id != -1 and i == len(vials[v].color_list) - 1:
-                        approved = False
-                    pass
-                else:
-                    approved = False
-            if approved:
-                print("approved")
-                for w in range(len(vials)):
-                    print(w)
-                    if not v == w:
-                        for i in range(len(vials[w].color_list) -1, -1, -1):
-                            if vials[w].color_list[i].id == -1:
-                                pass
-                            elif vials[w].color_list[i].id == check:
-                                print("w, v", w, v)
-                                return (w, v)
-                            else:
-                                pass
-    
-        # Case 4, move same colors to lower value
-        print("case4")
-        tops = []
-        for v in range(len(vials)):
-            for c in range(len(vials[v].color_list) -1, -1, -1):
-                if vials[v].color_list[c].id != -1:
-                    tops.append((v, c))
-                    break
+        optimize_moves(main_display, possible_moves)
+        # copy the display to have a main one and a test one.
+        # Save a state of possible_moves every time before the recursion, return to that after
 
-        while len(tops) > 0:
-            head = (0, 0)
-            for t in tops:
-                if t[1] > head[1]:
-                    head = t
-            
-            for c in range(len(tops)):
-                if tops[c] == head:
-                    head = tops.pop(c)
-                    break
-
-            for v in range(len(vials)):
-                if v != head[0]:
-                    for c in range(len(vials[v].color_list) -1, -1, -1):
-                        if vials[v].color_list[c].id != -1:
-                            if vials[v].color_list[c].id == vials[head[0]].color_list[head[1]].id:
-                                return((v, head[0]))
-                            else:
-                                break
-    
-                
-
-
-
-    print("default")"""
-
-                            
 
 if __name__ == "__main__":
     main()
