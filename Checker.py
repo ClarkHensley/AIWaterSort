@@ -51,3 +51,15 @@ def testMoves(possible_moves, main_display):
             move.score += 4 * main_display.vials[move.t].top
             move.score += 1 * (main_display.vials[move.f].numberOfChunks + main_display.vials[move.t].numberOfChunks)  
 
+def scoreState(state):
+    
+    if state.state.checkSolved():
+        state.score -= 100000
+        return
+
+    for vial in state.state.vials:
+        if vial.oneColor:
+            state.score -= 25
+        state.score -= 10 * vial.getHeightOfTop()
+        state.score += 2 * vial.numberOfChunks 
+
