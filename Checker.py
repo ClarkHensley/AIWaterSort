@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from copy import deepcopy
+
 from Vial import Vial
 from Move import Move
 
@@ -47,8 +49,8 @@ def testMoves(possible_moves, main_display):
             move.score += 50 * main_display.vials[move.f].numberOfChunks
         # Move the tallest tops to the lowest lows, with a slightly worse value for chunkiness
         else:
-            move.score -= 20 * main_display.vials[move.f].top
-            move.score += 4 * main_display.vials[move.t].top
+            move.score -= 20 * main_display.vials[move.t].top
+            move.score += 4 * main_display.vials[move.f].top
             move.score += 1 * (main_display.vials[move.f].numberOfChunks + main_display.vials[move.t].numberOfChunks)  
 
 def scoreState(state):
@@ -59,7 +61,54 @@ def scoreState(state):
 
     for vial in state.state.vials:
         if vial.oneColor:
-            state.score -= 25
+            state.score -= 25 * vial.getHeightOfTop()
         state.score -= 10 * vial.getHeightOfTop()
         state.score += 2 * vial.numberOfChunks 
+
+def checkCycle(history, depth):
+
+    for i in range(len(history)):
+        temp = deepcopy(history)
+        temp = temp[:i]
+        for j in range(len(temp)):
+            if history[i].f == temp[j].f and history[i].t == temp[j].t:
+                hist_ind_new = i
+                hist_ind_prev = j
+                size = 1
+                while hist_ind_new < len(history):
+                    i += 1
+                    j += 1
+                    if history[i].f == temp[j].f and history[i].t == temp[j].t:
+                        size += 1
+                        if size > depth:
+                            return True
+                    else:
+                        break
+    return False
+                
+        
+
+    '''values = []
+    pairs = []
+    pairs = set(pairs)
+    for i, move in enumerate(history):
+        for old_move in values:
+            if move.f == old_move.f and move.t == old_move.t:
+                pairs.add(i)
+        values.append(move)'''
+
+    pairs = list(pairs)
+    print(pairs)
+    size = 0
+    for num in range(1, len(pairs)):
+        if pairs[num - 1] == pairs[num]:
+            size += 1
+            if size > depth:
+                #DEBUG
+                print("Stuck in a loop")
+                return True
+        else:
+            size = 0
+
+    return False
 

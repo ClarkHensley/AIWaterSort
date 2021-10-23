@@ -7,25 +7,21 @@ from os import name
 import subprocess
 import time
 import heapq
-
-# Testing
-import random
-import sys
+from copy import deepcopy
+import timeit
 
 # Class Imports
 from Water import Water
 from Display import Display
 from State import State
-from Checker import canMove, optimizeMoves, scoreState
+from Checker import canMove, optimizeMoves, scoreState, checkCycle
 
 def main():
-
-    sys.setrecursionlimit(20000)
 
     # Constants
     # No MAGIC NUMBERS
     VIAL_DEPTH = 4
-    VIAL_NUMBER = 7
+    VIAL_NUMBER = 9
     EXTRA_VIALS = 2
 
     color_permutations = []
@@ -59,31 +55,53 @@ def main():
         for _ in range(VIAL_DEPTH):
             color_list.append(temp) 
 
-    main_display = Display(color_list[:], VIAL_DEPTH, VIAL_NUMBER, EXTRA_VIALS)
+    color_list_copy = deepcopy(color_list)
+    main_display = Display(color_list_copy, VIAL_DEPTH, VIAL_NUMBER, EXTRA_VIALS)
+    color_list_copy = deepcopy(color_list)
+    curr_display = Display(color_list_copy, VIAL_DEPTH, VIAL_NUMBER, EXTRA_VIALS)
 
-    while not(solved):
+    del curr_display.vials
+    curr_display.vials = deepcopy(main_display.vials)
 
+    start = timeit.default_timer()    
+    solution, stop = recursiveSolve(curr_display, color_list)
+
+    if type(solution) == str:
+        #subprocess.run(clear_string)
         main_display.show()
-        solution = []
-        solution = recursiveSolve(main_display, color_list, [], [], solution, 1)
-        #time.sleep(1)
-        
-        print(len(solution))
         print(solution)
-        input()
 
-        subprocess.run(clear_string)
+    else:
 
-    subprocess.run(clear_string)
-    main_display.show()
+        #subprocess.run(clear_string)
+        main_display.show()
 
-    print("\nCompleted! Good Job!")
+        for i in range(len(solution)):
 
-def recursiveSolve(curr_display, color_list, possible_moves, current_path, solution, steps):
+            #subprocess.run(clear_string)
+
+            print("Step " + str(i + 1) + "\n")
+            
+            main_display.transfer(solution[i].f, solution[i].t)
+            main_display.show()
+    
+            time.sleep(0.5)
+    
+        #subprocess.run(clear_string)
+        main_display.show()
+
+        print("\nTime to find this solution: " + str(stop - start) + " seconds.")
+    
+        print("\nCompleted! Good Job!")
+    
+def recursiveSolve(curr_display, color_list, possible_moves=[], current_path=[], solution=[]):
+
+    temp_cycle = deepcopy(current_path)
+    if checkCycle(temp_cycle, curr_display.depth):
+        return "Stuck in a loop", None
 
     if curr_display.checkSolved():
-        solution = current_path[:]
-        return solution
+        return current_path, timeit.default_timer()
 
     optimizeMoves(curr_display, possible_moves)
 
@@ -92,31 +110,40 @@ def recursiveSolve(curr_display, color_list, possible_moves, current_path, solut
 
     list_of_states = []
     while len(possible_moves) > 0:
-        '''print(steps)
-        for i in range(len(possible_moves)):
-            print(steps)
-            print("move " + str(i + 1))
-            print(possible_moves[i].score)
-            print(possible_moves[i].f)
-            print(possible_moves[i].t)
-            print()'''
         next_move = heapq.heappop(possible_moves)
 
         current_path.append(next_move) 
 
-        new_display = Display(color_list[:], curr_display.depth, curr_display.vial_number, curr_display.extra_vials)
-        new_display.vials = curr_display.vials[:]
+        color_list_copy = deepcopy(color_list)
+
+        new_display = Display(color_list_copy, curr_display.depth, curr_display.vial_number, curr_display.extra_vials)
+        del new_display.vials
+        new_display.vials = deepcopy(curr_display.vials)
         new_display.transfer(next_move.f, next_move.t)
 
-        list_of_states.append(State(new_display, 0, current_path[:])) 
+        new_path = deepcopy(current_path)
+        list_of_states.append(State(new_display, 0, new_path)) 
         scoreState(list_of_states[-1])
+        del current_path[-1]
         
     heapq.heapify(list_of_states)
     while len(list_of_states) > 0:
+
+        print(len(current_path))
+        curr_display.show()
+        time.sleep(0.5)
+
         next_state = heapq.heappop(list_of_states)
-        return recursiveSolve(next_state.state, color_list, [], next_state.path, solution, steps + 1)
+        next_path = deepcopy(next_state.path)
+        result, stop = recursiveSolve(next_state.state, color_list, [], next_path, solution)
+        if type(result) != str:
+            return result, stop
+        
+        #DEBUG
+        if len(list_of_states) > 0:
+            print("Backtracking")
     
-    return "No Solution Could Be Found"
+    return "No Solution Could Be Found", None
 
 
 if __name__ == "__main__":

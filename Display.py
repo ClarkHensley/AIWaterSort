@@ -49,7 +49,7 @@ class Display:
 
     def checkSolved(self):
         for vial in self.vials:
-            if not(vial.won):
+            if not(vial.won or vial.empty):
                 return False
 
         return True

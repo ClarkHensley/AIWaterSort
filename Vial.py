@@ -43,9 +43,9 @@ class Vial:
         
     def update(self):
         self.drawDisplay()
-        self.checkWon()
         self.checkOneColor()
         self.checkEmpty()
+        self.checkWon()
 
     def drawDisplay(self):
 
@@ -102,6 +102,8 @@ class Vial:
         self.empty = flag
         if flag:
             self.top = -1
+        if self.empty:
+            self.won = True
 
     def countChunks(self):
         tempList = []
