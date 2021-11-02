@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from copy import deepcopy
+import subprocess
 
 from Vial import Vial
 from Move import Move
@@ -28,6 +29,17 @@ def canMove(from_vial, to_vial):
     else:
         return False
 
+def compareMoves(first_move, second_move, first_color = None, second_color = None):
+    if not(first_move.f == second_move.t):
+        return False
+    if not(first_move.t == second_move.f):
+        return False
+    if first_color is not None and second_color is not None:
+        if not (first_color == second_color):
+            return False
+
+    return True
+
 def optimizeMoves(main_display, possible_moves):
     
     for i in range(len(main_display.vials)):
@@ -41,10 +53,10 @@ def testMoves(possible_moves, main_display):
     for move in possible_moves:
         # Test for One-Color vials
         if main_display.vials[move.f].oneColor:
-            move.score += 100000
+            move.score += 1000000
         # Move appropriate tops into One-Color Vials
         elif main_display.vials[move.t].oneColor:
-            move.score -= 1000
+            move.score -= 10000
             move.score -= 100 * main_display.vials[move.f].getHeightOfTop()
             move.score += 50 * main_display.vials[move.f].numberOfChunks
         # Move the tallest tops to the lowest lows, with a slightly worse value for chunkiness
@@ -65,50 +77,15 @@ def scoreState(state):
         state.score -= 10 * vial.getHeightOfTop()
         state.score += 2 * vial.numberOfChunks 
 
-def checkCycle(history, depth):
+def checkVisited(state, visited_states):
 
-    for i in range(len(history)):
-        temp = deepcopy(history)
-        temp = temp[:i]
-        for j in range(len(temp)):
-            if history[i].f == temp[j].f and history[i].t == temp[j].t:
-                hist_ind_new = i
-                hist_ind_prev = j
-                size = 1
-                while hist_ind_new < len(history):
-                    i += 1
-                    j += 1
-                    if history[i].f == temp[j].f and history[i].t == temp[j].t:
-                        size += 1
-                        if size > depth:
-                            return True
-                    else:
-                        break
-    return False
-                
+    for s in range(len(visited_states)):
+        test_list = deepcopy(state)
+        while len(test_list) > 0 and test_list[0] in visited_states[s]:
+            del test_list[0]
         
-
-    '''values = []
-    pairs = []
-    pairs = set(pairs)
-    for i, move in enumerate(history):
-        for old_move in values:
-            if move.f == old_move.f and move.t == old_move.t:
-                pairs.add(i)
-        values.append(move)'''
-
-    pairs = list(pairs)
-    print(pairs)
-    size = 0
-    for num in range(1, len(pairs)):
-        if pairs[num - 1] == pairs[num]:
-            size += 1
-            if size > depth:
-                #DEBUG
-                print("Stuck in a loop")
-                return True
-        else:
-            size = 0
+        if len(test_list) == 0:
+            return True
 
     return False
 

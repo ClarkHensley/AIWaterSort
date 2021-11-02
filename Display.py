@@ -11,6 +11,7 @@ class Display:
         self.depth = depth
         self.vial_number = vial_number
         self.extra_vials = extra_vials
+        self.check_list = []
 
         self.vials = []
         for i in range(self.vial_number - self.extra_vials):
@@ -18,6 +19,12 @@ class Display:
 
         for i in range(self.extra_vials):
             self.vials.append(Vial(self.color_list, self.depth, True, self.vial_number + i))
+
+        for i in range(len(self.vials)):
+            temp = []
+            for j in range(self.depth):
+                temp.append(self.vials[i].color_list[j].id)
+            self.check_list.append(temp)
 
     def transfer(self, from_ind, to_ind):
 
@@ -44,8 +51,14 @@ class Display:
                         self.vials[from_ind].decrementTop()
                     self.vials[to_ind].update()
                     self.vials[from_ind].update()
-    
-        #return self.checkSolved()
+
+            del self.check_list
+            self.check_list = []
+            for i in range(len(self.vials)):
+                temp = []
+                for j in range(self.depth):
+                    temp.append(self.vials[i].color_list[j].id)
+                self.check_list.append(temp)
 
     def checkSolved(self):
         for vial in self.vials:
