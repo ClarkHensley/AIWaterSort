@@ -112,18 +112,6 @@ class Vial:
 
         self.numberOfChunks = len(set(tempList))
 
-    def __eq__(self, other):
-        for i in range(self.depth):
-            if self.color_list[i].id != other.color_list[i].id:
-                return False
-
-        return True
-
-    def __ne__(self, other):
-        for i in range(self.depth):
-            if self.color_list[i].id != other.color_list[i].id:
-                return True
-
         return False
 
 

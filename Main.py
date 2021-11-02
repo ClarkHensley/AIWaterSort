@@ -21,7 +21,7 @@ def main():
     # Constants
     # No MAGIC NUMBERS
     VIAL_DEPTH = 4
-    VIAL_NUMBER = 14
+    VIAL_NUMBER = 21
     EXTRA_VIALS = 2
 
     color_permutations = []
@@ -137,7 +137,7 @@ def recursiveSolve(curr_display, color_list, current_path=[], visited_states = [
         #subprocess.run("clear")
         #print("\n" + str(len(current_path)))
         #curr_display.show()
-        #time.sleep(0.2)
+        #time.sleep(0.01)
 
         next_state = heapq.heappop(list_of_states)
         next_path = deepcopy(next_state.path)
