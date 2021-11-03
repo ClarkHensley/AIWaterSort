@@ -20,9 +20,6 @@ def canMove(from_vial, to_vial):
     elif to_vial.won:
         return False
 
-    elif from_vial.oneColor:
-        return False
-
     elif from_vial.color_list[from_vial.top].id == to_vial.color_list[to_vial.top].id and to_vial.top < to_vial.depth - 1:
         return True
 
